@@ -1,4 +1,10 @@
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+
 assignments = []
+
 
 def assign_value(values, box, value):
     """
@@ -27,33 +33,49 @@ def naked_twins(values):
     
     # loop trough each unit and then each box in that unit
     for unit in unitlist:
-        for box in unit:
+        #for box in unit:
             # filter boxes with only two digits, then populate auxiliary dictionary
             # while counting the number of boxes with identical values: {'23':2, '17':4,'32':1,...}
-            if len(values[box]) == 2:
-                if values[box] in twins_list:
-                    twins_list[values[box]] += 1
-                else:
-                    twins_list[values[box]] = 1
+
+        twins_list = count_vals(values, unit)
         # check if unit has at least one box with two digits
         if twins_list:
             # iterate through each found box with two digits 
-            for counter in twins_list:
-                # check if a unit has at least 2 boxes with two digits
-                if twins_list[counter] == 2:
-                    # iterate through eeach box in the unit
-                    for b in unit:
-                        # make sure we don't delete the values from twins!
-                        if values[b] != counter:
-                            # delete values found in twins from the peers in a given unit
-                            for i in [0,1]:
-                                if counter[i] in values[b]:
-                                    assign_value(values, b, values[b].replace(counter[i],''))
+            find_and_delete_twins(values, twins_list, unit)
+
         # empty the auxiliary dictionary for the next unit
         twins_list = {}
 
     return values
 
+
+def find_and_delete_twins(values, twins_list, unit):
+    for counter in twins_list:
+        # check if a unit has at least 2 boxes with the same two digits, i.e. find twins
+        if twins_list[counter] == 2:
+            # iterate through eeach box in the unit and delete corresponding values
+            for b in unit:
+                delete_twins(values, counter, b)
+
+
+def delete_twins(values, counter, b):
+    # make sure we don't delete the values from twins!
+    if values[b] != counter:
+        # delete values found in twins from the peers in a given unit
+        for i in [0,1]:
+            if counter[i] in values[b]:
+                assign_value(values, b, values[b].replace(counter[i],''))    
+
+
+def count_vals(values, unit):
+    count_list = {}
+    for box in unit:
+        if len(values[box]) == 2:
+            if values[box] in count_list:
+                count_list[values[box]] += 1
+            else:
+                count_list[values[box]] = 1
+    return count_list
 
 
 rows = 'ABCDEFGHI'
